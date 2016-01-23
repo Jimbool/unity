@@ -3,7 +3,7 @@ using System;
 
 public class UIBase : MonoBehaviour {
     
-    public void Show(EventArgs e) {
+    public virtual void Show(EventArgs e) {
 
     }
 
