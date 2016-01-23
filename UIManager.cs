@@ -1,13 +1,13 @@
 ﻿/*******************************************************************************
  File Name: UIManager.cs
  Descript:
- 
+    instance pool
  Version: 3.1
  Created Time: 2016/1/20 18:48:20
  Compiler: NETFrameworkv4.0.30319
  Editor: Gvim7.4
- Author: 
- mail: 
+ Author: Jimbo
+ mail: jimboo.lu@gmail.com
  
  Company:
 *******************************************************************************/
@@ -25,51 +25,80 @@ public class UIManager {
     public int Capacity { get; set; }
     public int Count { get; private set; }
 
+    Node head;
+
     public T Create<T>(EventArgs e = null) where T : UIBase, new() {
+        T obj;
+        if(null == head) {
+            head = new Node();
+            obj = new T();
+            head.Data = obj;
+            return obj;
+        }
         Node node = head;
-        Node pre = head;
-        while(null != node) {
-            if(node.Data is T) {
+        while(true) {
+            if (node.Data is T) {
+                Node pre = node.Pre;
                 pre.Next = node.Next;
                 node.Next = head;
+                head.Pre = node;
                 head = node;
                 return node.Data as T;
             }
-            pre = node;
+            if(null == node.Next) {
+                break;
+            }
             node = node.Next;
         }
-        T obj = new T();
-        if(null == node) {
-            node = new Node();
+        if(Count >= Capacity) {
+            obj = new T();
+            obj.Show(e);
+            UIBase o = node.Data;
+            o.Delete();
             node.Data = obj;
+            Node pre = node.Pre;
+            pre.Next = null;
+            node.Pre = null;
+            node.Next = head;
+            head.Pre = node;
+            head = node;
             return obj;
         }
-        Node newNode = new Node();
-        newNode.Data = obj;
-        newNode.Next = head;
-        head = newNode;
-        Count++;
-        if (Count > Capacity) {
-            Clean();
+        else {
+            obj = new T();
+            Node newNode = new Node();
+            newNode.Data = obj;
+            newNode.Next = head;
+            head.Pre = newNode;
+            head = newNode;
+            Count++;
         }
         obj.Show(e);
         return obj;
     }
 
-    public void Destory<T>() where T : UIBase {
+    public void Delete<T>() where T : UIBase {
         if(null == head) {
             return;
         }
         Node node = head;
-        Node pre = head;
-        while(null != node) {
-            if(node.Data is T) {
-                pre.Next = node.Next;
-                Count--;
+        Node d = head;
+        while(true) {
+            if (node.Data is T) {
+                d = node;
+            }
+            if(null == node.Next) {
                 break;
             }
-            pre = node;
             node = node.Next;
+        }
+        if(d != node) {
+            Node pre = d.Pre;
+            Node next = d.Next;
+            pre.Next = next;
+            next.Pre = pre;
+            node.Next = d;
+            d.Pre = node;
         }
     }
 
@@ -77,27 +106,11 @@ public class UIManager {
         public Node() {
             Data = null;
             Next = null;
+            Pre = null;
         }
 
         public UIBase Data { get; set; }
         public Node Next { get; set; }
-    }
-
-    Node head;
-
-    void Clean() {
-        if(null == head) {
-            return;
-        }
-        Node node = head;
-        int i = 0;
-        while (i < Capacity && null != node) {
-            node = node.Next;
-            i++;
-        }
-        Count = i;
-        if(null != node.Next) {
-            node.Next = null;
-        }
+        public Node Pre { get; set; }
     }
 }
