@@ -100,3 +100,9 @@ public class UIManager {
         public Node Pre { get; set; }
     }
 }
+姓    名：卢建波                        性   别：男
+出生年月：1991/10/28                    籍   贯：四川乐山
+毕业学校：成都东软学院                  专   业：网络工程
+联系电话：13908079090                   E-mail  ：986652618@qq.com 
+个人主页:  https://github.com/Jimbool/unity
+           http://ermao.sinaapp.com/
