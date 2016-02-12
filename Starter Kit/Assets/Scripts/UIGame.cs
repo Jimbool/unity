@@ -17,11 +17,6 @@ using UnityEngine;
 
 public class UIGame : MonoBehaviour {
 
-    private static Node head = null;
-    private static Node end = null;
-    private static int count = 0;
-    private static int capacity = 10;
-
     public static T Create<T>() where T : UIGame, new() {
         T obj;
         Node node = head;
@@ -99,4 +94,9 @@ public class UIGame : MonoBehaviour {
         public Node Pre { get; set; }
         public Node Next { get; set; }
     }
+
+    private static Node head = null;
+    private static Node end = null;
+    private static int count = 0;
+    private static int capacity = 10;
 }
