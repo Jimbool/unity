@@ -56,6 +56,10 @@ public class UIGame : MonoBehaviour {
         else {
             node = end;
             end = node.Pre;
+            UIGame o = node.Data;
+            if(null != o) {
+                o.Delete();
+            }
             node.Data = obj;
             end.Next = null;
             node.Pre = null;
