@@ -1,105 +1,95 @@
-﻿using UnityEngine;
+/*******************************************************************************
+ File Name: AssetBundle.cs
+ Descript:
+        AssetBundle Tools
+ Version: 1.0
+ Created Time: 2016/2/18 17:13:19
+ Compiler: NETFrameworkv4.0.30319
+ Editor: Gvim7.4
+ Author: Jimbo
+ mail: jimboo.lu@gmail.com
+ 
+ Company: 
+*******************************************************************************/
+
+using UnityEngine;
 using UnityEditor;
-/// <summary>  
-/// 将选中的预制分别打包  
-/// </summary>  
+using System.Text;
 
 public class AssetBundle {
-    [MenuItem("AssetBundle/Create AssetBundles")]
+    [MenuItem("AssetBundle/Create AssetBundlesThemelves")]
     static void CreateAssetBundleThemelves() {
-        //获取要打包的对象（在Project视图中）  
-        Object[] selects = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
-        //遍历选中的对象  
-        foreach (Object obj in selects) {
-            //这里建立一个本地测试  
-            //注意本地测试中可以是任意的文件，但是到了移动平台只能读取路径StreamingAssets里面的  
-            //StreamingAssets是只读路径，不能写入  
-            string targetPath = Application.dataPath + "/StreamingAssets/" + obj.name + ".assetbundle";//文件的后缀名是assetbundle和unity都可以  
-            if (BuildPipeline.BuildAssetBundle(obj, null, targetPath, BuildAssetBundleOptions.CollectDependencies)) {
-
-                Debug.Log(obj.name + "is packed successfully!");
+        Object[] selects = Selection.GetFiltered(typeof(Object), 
+                SelectionMode.DeepAssets);
+        StringBuilder path = new StringBuilder(Application.dataPath);
+#if UNITY_IPHONE
+        foreach(Object obj in selects) {
+            path = path.Append("/StreamingAssets").Append(obj.name).Append(".abi");
+            if (BuildPipeline.BuildAssetBundle(obj, null, path,
+                        BuildAssetBundleOptions.CollectDependencies, 
+                        BuildTarget.Iphone)) {
+                StringBuilder log = new StringBuilder(obj.name);
+                log.Append("is packed successfully!");
+                Debug.Log(log.ToString());
             }
             else {
-                Debug.Log(obj.name + "is packed failly!");
+                StringBuilder log = new StringBuilder(obj.name);
+                log.Append("is packed failly!");
+                Debug.Log(log.ToString());
             }
         }
-        //刷新编辑器（不写的话要手动刷新,否则打包的资源不能及时在Project视图内显示）  
+#elif UNITY_ANDROID
+        foreach(Object obj in selects) {
+            path = path.Append("/StreamingAssets").Append(obj.name).Append(".aba");
+            if(BuildPipeline.BuildAssetBundle(obj, null, path, 
+                        BuildAssetBundleOptions.CollectDependencies
+                        BuildTarget.Android)) {
+                StringBuilder log = new StringBuilder(obj.name);
+                log.Append("is packed successfully!");
+                Debug.Log(log.ToString());
+            }
+            else {
+                StringBuilder log = new StringBuilder(obj.name);
+                log.Append("is packed failly!");
+                Debug.Log(log.ToString());
+            }
+        }
+#endif
         AssetDatabase.Refresh();
     }
 
-    /// <summary>  
-    /// 将选中的预制打包到一起  
-    /// </summary>  
-    [MenuItem("AssetBundle/Create AssetBundles Together")]
+    [MenuItem("AssetBundle/Create AssetBundlesTogether")]
     static void CreateAssetBundleTogether() {
-        //要打包的对象  
-        Object[] selection = Selection.GetFiltered(typeof(Object), SelectionMode.DeepAssets);
-        //要打包到的路径  
-        string path = Application.dataPath + "/StreamingAssets/Together.assetbundle";
-        if (BuildPipeline.BuildAssetBundle(Selection.activeObject, selection, path, BuildAssetBundleOptions.CollectDependencies, BuildTarget.Android)) {
-            Debug.Log("Packed successfully!");
+        Object[] selects = Selection.GetFiltered(typeof(Object));
+        StringBuilder path = new StringBuilder(Application.dataPath);
+#if UNITY_IPHONE
+        path = path.Append("/StreamingAssets").Append(obj.name).Append(".abi");
+        if(BuildPipeline.BuildAssetBundle(Selection.activeObject, selection, path, 
+                    BuildAssetBundleOptions.CollectDependencies, BuildTarget.Iphone)) {
+            StringBuilder log = new StringBuilder(obj.name);
+            log.Append("is packed successfully!");
+            Debug.Log(log.ToString());
 
         }
         else {
-            Debug.Log("Packed failly!");
+            StringBuilder log = new StringBuilder(obj.name);
+            log.Append("is packed failly!");
+            Debug.Log(log.ToString());
         }
-        //刷新编辑器（不写的话要手动刷新）  
+#if UNITY_ANDROID
+        path = path.Append("/StreamingAssets").Append(obj.name).Append(".aba");
+        if(BuildPipeline.BuildAssetBundle(Selection.activeObject, Selection, path,
+                    BuildAssetBundleOptions.CollectDependencies, BuildTarget.Android)) {
+            StringBuilder log = new StringBuilder(obj.name);
+            log.Append("is packed successfully!");
+            Debug.Log(log.ToString());
+        }
+        else {
+            StringBuilder log = new StringBuilder(obj.name);
+            log.Append("is packed failly!");
+            Debug.Log(log.ToString());
+        }
+#endif
         AssetDatabase.Refresh();
     }
 }
-
-// C# Example
-// Builds an asset bundle from the selected folder in the project view.
-// Bare in mind that this script doesnt track dependencies nor is recursive
-//在项目视图从选择的文件夹生成资源包
-//记住，这个脚本不跟踪依赖关系，也不是递归
-//using UnityEngine;
-//using UnityEditor;
-//using System.IO;
-
-//public class BuildAssetBundlesFromDirectory {
-//    [@MenuItem("AssetBundles/Build AssetBundles")]
-//    static void ExportAssetBundles() {
-//        // Get the selected directory
-//        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-//        Debug.Log("Selected Folder: " + path);
-//        if (path.Length != 0) {
-//            path = path.Replace("Assets/", "");
-//            string[] fileEntries = Directory.GetFiles(Application.dataPath + "/" + path);
-//            foreach (string fileName in fileEntries) {
-//                string filePath = fileName.Replace("", "/");
-//                int index = filePath.LastIndexOf("/");
-//                filePath = filePath.Substring(index);
-//                Debug.Log(filePath);
-//                string localPath = "Assets/" + path;
-//                if (index > 0)
-//                    localPath += filePath;
-//                Object t = AssetDatabase.LoadMainAssetAtPath(localPath);
-//                if (t != null) {
-//                    Debug.Log(t.name);
-//                    string bundlePath = "Assets/" + path + "/" + t.name + ".unity3d";
-//                    Debug.Log("Building bundle at: " + bundlePath);
-//                    // Build the resource file from the active selection.
-//                    //从激活的选择编译资源文件
-//                    BuildPipeline.BuildAssetBundle
-//                    (t, null, bundlePath, BuildAssetBundleOptions.CompleteAssets, BuildTarget.Android);
-//                }
-
-//            }
-//        }
-//    }
-
-    //void Start() {
-    //    var www = new WWW("http://myserver/myBundle.unity3d");
-    //    //定义www为WWW类型并且赋予一个网络资源进行下载。
-
-    //    yield www;
-
-    //    //等待下载完毕，完全获取www资源。
-    //    // Get the designated main asset and instantiate it.
-    //    //获取指定的数据资源并且实例化。
-    //    Instantiate(www.assetBundle.mainAsset);
-    //    实例化生成数据在场景中。
-    //}
-//}
-
